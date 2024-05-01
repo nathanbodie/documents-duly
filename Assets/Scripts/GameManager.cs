@@ -5,18 +5,28 @@ using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.InteropServices;
+using TMPro;
 using UnityEngine;
+using UnityEditor.UI;
 using Random = UnityEngine.Random;
 
 public class GameManager : MonoBehaviour
 {
-    //GameObject Passport = GameObject.Find("PassportScriptable");
+    // Game objects to control.
     public GameObject gameOver;
+    public GameObject restart;
+    public GameObject greenButton;
+    public GameObject redButton;
+
+    // Text.
+    [SerializeField] TextMeshProUGUI scoreText;
+    [SerializeField] TextMeshProUGUI highScoreText;
 
     // 0 - 2 = knaveria, 3 - 5 = milia, 6 - 8 = witha
     [SerializeField] Sprite[] passportImages;
     [SerializeField] SpriteRenderer spriteRenderer;
 
+    // Characters.
     public Character current = null;
     Character char1 = new Character { allowed = true, country = "Knaveria", bodyType = "pyramidbuff" };
     Character char2 = new Character { allowed = false, country = "Knaveria", bodyType = "pyramidbuff" };
@@ -26,13 +36,20 @@ public class GameManager : MonoBehaviour
     Character char6 = new Character { allowed = true, country = "Withambian", bodyType = "spheretiny" };
     List<Character> characters = new List<Character>();
 
+    // Keep track of scores.
+    public int score = 0;
+    public int highScore = 0;
+
 
     public void loadCharacter()
     {
         current = characters.ElementAt(UnityEngine.Random.Range(0, characters.Count()));
+        scoreText.text = "Score: " + (score.ToString());
+        highScoreText.text = "High: " + (score.ToString());
+
         PrintPassport();
     }
-        
+
     public void OnStartButtonPress()
     {
         characters.Add(char1);
@@ -41,6 +58,8 @@ public class GameManager : MonoBehaviour
         characters.Add(char4);
         characters.Add(char5);
         characters.Add(char6);
+        score = 0;
+        gameOver.SetActive(false);
         loadCharacter();
     }
 
@@ -48,10 +67,19 @@ public class GameManager : MonoBehaviour
     {
         if (current.allowed == true)
         {
+            score++;
+            if (highScore < score)
+            {
+                highScore++;
+            }
             loadCharacter();
         }
         else
         {
+            gameOver.SetActive(true);
+            restart.SetActive(true);
+            greenButton.SetActive(false);
+            redButton.SetActive(false);
             // Display gameover.
         }
     }
@@ -60,10 +88,20 @@ public class GameManager : MonoBehaviour
     {
         if (current.allowed == false)
         {
+            score++;
+            if (highScore < score)
+            {
+                highScore++;
+            }
             loadCharacter();
         }
         else
         {
+            gameOver.SetActive(true);
+            restart.SetActive(true);
+            greenButton.SetActive(false);
+            redButton.SetActive(false);
+
             // Display gameover.
         }
     }
@@ -81,37 +119,35 @@ public class GameManager : MonoBehaviour
             }
             else
             {
-                int ran = UnityEngine.Random.Range(1, 3);
+                int ran = UnityEngine.Random.Range(1, 11);
                 spriteRenderer.sprite = passportImages[start + ran];
             }
         }
 
         else if (current.country.Equals("Milia") == true)
         {
-            start = 3;
+            start = 11;
             if (current.allowed == true)
             {
                 spriteRenderer.sprite = passportImages[start];
             }
             else
             {
-                int ran = UnityEngine.Random.Range(1, 3);
-                Debug.Log(ran);
+                int ran = UnityEngine.Random.Range(1, 11);
                 spriteRenderer.sprite = passportImages[start + ran];
             }
         }
 
         else if (current.country.Equals("Withambian") == true)
         {
-            start = 6;
-            Debug.Log("Goes here");
+            start = 22;
             if (current.allowed == true)
             {
                 spriteRenderer.sprite = passportImages[start];
             }
             else
             {
-                int ran = UnityEngine.Random.Range(1, 3);
+                int ran = UnityEngine.Random.Range(1, 11);
                 spriteRenderer.sprite = passportImages[start + ran];
             }
         }
