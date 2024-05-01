@@ -22,49 +22,86 @@ public class GameManager : MonoBehaviour
     [SerializeField] TextMeshProUGUI scoreText;
     [SerializeField] TextMeshProUGUI highScoreText;
 
-    // 0 - 2 = knaveria, 3 - 5 = milia, 6 - 8 = witha
+    // 0 - 10 = knaveria, 11 - 21 = milia, 22 - 33 = witha
     [SerializeField] Sprite[] passportImages;
     [SerializeField] SpriteRenderer spriteRenderer;
 
-    // Characters.
+    // Character selection.
     public Character current = null;
-    Character char1 = new Character { allowed = true, country = "Knaveria", bodyType = "pyramidbuff" };
-    Character char2 = new Character { allowed = false, country = "Knaveria", bodyType = "pyramidbuff" };
-    Character char3 = new Character { allowed = false, country = "Milia", bodyType = "cubechunk" };
-    Character char4 = new Character { allowed = false, country = "Withambian", bodyType = "spheretiny" };
-    Character char5 = new Character { allowed = true, country = "Milia", bodyType = "cubechunk" };
-    Character char6 = new Character { allowed = true, country = "Withambian", bodyType = "spheretiny" };
-    List<Character> characters = new List<Character>();
+
+    // Models used.
+    public GameObject cubeBuff1;
+    public GameObject cubeChunk2;
+    public GameObject cubeTiny1;
+    public GameObject pyramidBuff1;
+    public GameObject prymaidChunk1;
+    public GameObject pyramidTiny2;
+    public GameObject sphereBuff1;
+    public GameObject sphereChunk1;
+    public GameObject sphereTiny1;
 
     // Keep track of scores.
     public int score = 0;
-    public int highScore = 0;
+    public int highScore;
 
+    // List of all data types.
+    public List<String> countries = null;
+    public List<GameObject> bodies = null;
 
+    // Audio stuff.
+    public AudioSource SFsource;
+    public AudioClip pass;
+    public AudioClip fail;
+
+    // Initialize the lists.
+    public void Start()
+    { 
+        countries = new List<String>() { "Knaveria", "Milia", "Withambian" };
+        bodies = new List<GameObject>() { cubeBuff1, cubeChunk2, cubeTiny1, pyramidBuff1, prymaidChunk1, pyramidTiny2, sphereBuff1, sphereChunk1, sphereTiny1 };
+    }
+
+    // Load a new character.
     public void loadCharacter()
     {
-        current = characters.ElementAt(UnityEngine.Random.Range(0, characters.Count()));
+        // Set if person can enter.
+        int temp = Random.Range(0, 2);
+        bool cAllow = false;
+        if (temp > 0)
+        {
+            cAllow = true;
+        }
+
+        // Pick from lists.
+        String cCountry = countries[Random.Range(0, countries.Count())];
+        GameObject cBodyType = bodies[Random.Range(0, bodies.Count())];
+
+        // Set current character equal.
+        current = new Character { allowed = cAllow, country = cCountry, bodyType = cBodyType };
+
+        // Scores.
         scoreText.text = "Score: " + (score.ToString());
         highScoreText.text = "High: " + (score.ToString());
 
+        // Get the passport and character printed.
         PrintPassport();
     }
 
+    // After start button pressed.
     public void OnStartButtonPress()
     {
-        characters.Add(char1);
-        characters.Add(char2);
-        characters.Add(char3);
-        characters.Add(char4);
-        characters.Add(char5);
-        characters.Add(char6);
+
+        // Reset all and load new character.
         score = 0;
         gameOver.SetActive(false);
         loadCharacter();
     }
 
+
+    // Green button to allow someone to enter.
     public void OnGreenButtonPress()
     {
+
+        // If character can enter, add and create new character.
         if (current.allowed == true)
         {
             score++;
@@ -72,18 +109,28 @@ public class GameManager : MonoBehaviour
             {
                 highScore++;
             }
+            current.bodyType.SetActive(false);
+            SFsource.clip = pass;
+            SFsource.Play();
             loadCharacter();
         }
+        
+        // Otherwise remove old one and show restart button.
+        // AKA game over.
         else
         {
+            SFsource.clip = fail;
+            SFsource.Play();
             gameOver.SetActive(true);
             restart.SetActive(true);
             greenButton.SetActive(false);
             redButton.SetActive(false);
-            // Display gameover.
+            current.bodyType.SetActive(false);
         }
     }
 
+    // Red button to deny someone
+    // (Used same code as previous, except allowed = false.
     public void OnRedButtonPress()
     {
         if (current.allowed == false)
@@ -93,22 +140,29 @@ public class GameManager : MonoBehaviour
             {
                 highScore++;
             }
+            current.bodyType.SetActive(false);
+            SFsource.clip = pass;
+            SFsource.Play();
             loadCharacter();
         }
         else
         {
+            SFsource.clip = fail;
+            SFsource.Play();
             gameOver.SetActive(true);
             restart.SetActive(true);
             greenButton.SetActive(false);
             redButton.SetActive(false);
+            current.bodyType.SetActive(false);
 
-            // Display gameover.
         }
+
     }
 
-
+    // Print the character and passport.
     public void PrintPassport()
     {
+        current.bodyType.SetActive(true);
         int start = 0;
         if (current.country.Equals("Knaveria") == true)
         {
@@ -154,9 +208,11 @@ public class GameManager : MonoBehaviour
     }
 }
 
+
+// Character object to make things easier.
 public class Character
 {
     public bool allowed;
     public string country;
-    public string bodyType;
+    public GameObject bodyType;
 }
